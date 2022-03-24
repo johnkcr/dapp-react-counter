@@ -1,0 +1,23 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: BalanceCounter
+    network: rinkeby
+    source:
+      address: "0xf7848d0778b51e556190ced43eb0a8d710f29ac7"
+      abi: BalanceCounter
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - balanceUpdated
+      abis:
+        - name: BalanceCounter
+          file: ./abis/BalanceCounter.json
+      eventHandlers:
+        - event: balanceUpdated(address,int256)
+          handler: handlebalanceUpdated
+      file: ./src/mapping.ts
