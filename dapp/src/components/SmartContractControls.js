@@ -7,72 +7,72 @@ const contractAddress = "0x0f69f0ac4b92bf0d101b5747eed3fa6b653a36f8";
 // Copied from remix ide
 const contractAbi = [
   {
-    constant: false,
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "int256",
+        name: "balance",
+        type: "int256",
+      },
+    ],
+    name: "balanceUpdated",
+    type: "event",
+  },
+  {
+    inputs: [{ internalType: "address", name: "", type: "address" }],
+    name: "balances",
+    outputs: [{ internalType: "int256", name: "", type: "int256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "decrementCounter",
     outputs: [],
-    payable: false,
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
   {
-    constant: false,
+    inputs: [],
+    name: "getCount",
+    outputs: [{ internalType: "int256", name: "", type: "int256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "incrementCounter",
     outputs: [],
-    payable: false,
     stateMutability: "nonpayable",
-    type: "function"
+    type: "function",
   },
-  {
-    constant: false,
-    inputs: [],
-    name: "reset",
-    outputs: [],
-    payable: false,
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [],
-    payable: false,
-    stateMutability: "nonpayable",
-    type: "constructor"
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: "getCounter",
-    outputs: [
-      {
-        name: "",
-        type: "int256"
-      }
-    ],
-    payable: false,
-    stateMutability: "view",
-    type: "function"
-  }
 ];
 
 class SmartContractControls extends React.Component {
   state = {
     value: 0,
-    needsUpdate: false
+    needsUpdate: false,
   };
 
   // gets the number stored in smart contract storage
   getNumber = ({ ...props }) => {
     try {
       this.props.contract.methods
-        .getCounter()
+        .getCount()
         .call()
-        .then(value => {
+        .then((value) => {
           value = Number(value.toString());
           this.setState({ value, needsUpdate: false });
           console.log("Updated number");
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
           this.setState({ error });
         });
@@ -81,47 +81,14 @@ class SmartContractControls extends React.Component {
     }
   };
 
-  // Check for updates to the transactions collection
-  processTransactionUpdates = prevProps => {
-    Object.keys(this.props.transactions).map(key => {
-      let tx = this.props.transactions[key];
-      console.log("Needs updated number: ", tx.status, this.state.needsUpdate);
-      // Will not work if there is a tx started before a prior tx has success -- first will flip needsUpdate to false
-      if (tx.status === "success" && this.state.needsUpdate) {
-        console.log("Getting updated number.");
-        this.getNumber();
-        return false;
-      } else {
-        console.log("Not updating number.");
-        return false;
-      }
-    });
-  };
-
-  resetCounter = () => {
-    this.props.contractMethodSendWrapper("reset");
-  };
-
   incrementCounter = () => {
-    let needsUpdate = true;
-    this.props.contractMethodSendWrapper(
-      "incrementCounter",
-      (txStatus, transaction) => {
-        console.log("incrementCounter callback: ", txStatus, transaction);
-        if (
-          txStatus === "confirmation" &&
-          transaction.status === "success" &&
-          needsUpdate
-        ) {
-          this.getNumber();
-          needsUpdate = false;
-        }
-      }
-    );
+    this.props.contractMethodSendWrapper("incrementCounter");
+    this.getNumber();
   };
 
   decrementCounter = () => {
     this.props.contractMethodSendWrapper("decrementCounter");
+    this.getNumber();
   };
 
   componentDidMount() {
@@ -139,43 +106,29 @@ class SmartContractControls extends React.Component {
   render() {
     return (
       <Box>
-
-        <Flex px={0} justifyContent="space-between" alignItems={'center'}>
-          <Text fontWeight={3}>
-            Smart contract value:
-          </Text>
-
-          <Button.Outline
-            size={"small"}
-            onClick={this.resetCounter}
-            disabled={!this.props.account}
-          >
-            Reset
-          </Button.Outline>
+        <Flex px={0} justifyContent="space-between" alignItems={"center"}>
+          <Text fontWeight={3}>Smart contract value:</Text>
         </Flex>
 
-        <Text fontSize={'5rem'} fontWeight={1} lineHeight={1} textAlign={'center'} my={5}>
+        <Text
+          fontSize={"5rem"}
+          fontWeight={1}
+          lineHeight={1}
+          textAlign={"center"}
+          my={5}
+        >
           {this.state.value}
         </Text>
 
-        <Flex flexDirection={'row'}>
-          <Button
-            onClick={this.decrementCounter}
-            flex={'1'}
-            mr={[2, 3]}
-          >
+        <Flex flexDirection={"row"}>
+          <Button onClick={this.decrementCounter} flex={"1"} mr={[2, 3]}>
             Decrease value
           </Button>
-          <Button
-            onClick={this.incrementCounter}
-            flex={'1'}
-          >
+          <Button onClick={this.incrementCounter} flex={"1"}>
             Increase value
           </Button>
         </Flex>
-
       </Box>
-
     );
   }
 }

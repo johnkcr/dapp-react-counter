@@ -26,7 +26,7 @@ const RimbleTransactionContext = React.createContext({
     required: {},
     current: {},
     isCorrectNetwork: null,
-    checkNetwork: () => {}
+    checkNetwork: () => {},
   },
   modals: {
     data: {
@@ -39,7 +39,7 @@ const RimbleTransactionContext = React.createContext({
       userRejectedValidation: {},
       wrongNetworkModalIsOpen: {},
       transactionConnectionModalIsOpen: {},
-      lowFundsModalIsOpen: {}
+      lowFundsModalIsOpen: {},
     },
     methods: {
       openNoWeb3BrowserModal: () => {},
@@ -57,16 +57,16 @@ const RimbleTransactionContext = React.createContext({
       closeTransactionConnectionModal: () => {},
       openTransactionConnectionModal: () => {},
       closeLowFundsModal: () => {},
-      openLowFundsModal: () => {}
-    }
+      openLowFundsModal: () => {},
+    },
   },
   transaction: {
     data: {
-      transactions: {}
+      transactions: {},
     },
     meta: {},
-    methods: {}
-  }
+    methods: {},
+  },
 });
 
 class RimbleTransaction extends React.Component {
@@ -127,7 +127,7 @@ class RimbleTransaction extends React.Component {
     const validBrowser = RimbleUtils.browserIsWeb3Capable();
 
     this.setState({
-      validBrowser
+      validBrowser,
     });
 
     return validBrowser;
@@ -191,7 +191,7 @@ class RimbleTransaction extends React.Component {
     } catch (error) {
       console.log("Could not create contract.");
       window.toastProvider.addMessage("Contract creation failed.", {
-        variant: "failure"
+        variant: "failure",
       });
     }
   };
@@ -203,7 +203,7 @@ class RimbleTransaction extends React.Component {
     if (window.ethereum) {
       try {
         // Request account access if needed
-        await window.ethereum.enable().then(wallets => {
+        await window.ethereum.enable().then((wallets) => {
           const account = wallets[0];
           this.closeConnectionPendingModal();
           this.setState({ account });
@@ -249,20 +249,20 @@ class RimbleTransaction extends React.Component {
   };
 
   // TODO: Can this be moved/combined?
-  rejectAccountConnect = error => {
+  rejectAccountConnect = (error) => {
     let modals = { ...this.state.modals };
     modals.data.accountConnectionPending = false;
     modals.data.userRejectedConnect = true;
     this.setState({ modals });
   };
 
-  getAccountBalance = async account => {
+  getAccountBalance = async (account) => {
     const localAccount = account ? account : this.state.account;
     if (localAccount) {
       try {
         await this.state.web3.eth
           .getBalance(localAccount)
-          .then(accountBalance => {
+          .then((accountBalance) => {
             if (!isNaN(accountBalance)) {
               accountBalance = this.state.web3.utils.fromWei(
                 accountBalance,
@@ -302,7 +302,7 @@ class RimbleTransaction extends React.Component {
       this.state.accountBalance < accountBalanceMinimum ? true : false;
 
     this.setState({
-      accountBalanceLow
+      accountBalanceLow,
     });
 
     if (
@@ -313,7 +313,7 @@ class RimbleTransaction extends React.Component {
 
       window.toastProvider.addMessage("Received Funds!", {
         variant: "success",
-        secondaryMessage: "You now have enough ETH"
+        secondaryMessage: "You now have enough ETH",
       });
     }
   };
@@ -357,12 +357,12 @@ class RimbleTransaction extends React.Component {
           console.log(successMessage, signature);
           window.toastProvider.addMessage(successMessage, {
             variant: "success",
-            secondaryMessage: "Welcome to the Rimble Demo App 🎉"
+            secondaryMessage: "Welcome to the Rimble Demo App 🎉",
           });
 
           this.closeValidationPendingModal();
           this.setState({
-            accountValidated: true
+            accountValidated: true,
           });
 
           if (this.state.callback) {
@@ -373,7 +373,7 @@ class RimbleTransaction extends React.Component {
     );
   };
 
-  rejectValidation = error => {
+  rejectValidation = (error) => {
     let modals = { ...this.state.modals };
     modals.data.userRejectedValidation = true;
     modals.data.accountValidated = false;
@@ -381,7 +381,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  connectAndValidateAccount = async callback => {
+  connectAndValidateAccount = async (callback) => {
     if (!this.web3ActionPreflight()) {
       return;
     }
@@ -422,7 +422,7 @@ class RimbleTransaction extends React.Component {
 
     let requiredNetwork = {
       name: networkName,
-      id: networkId
+      id: networkId,
     };
 
     let network = { ...this.state.network };
@@ -502,7 +502,7 @@ class RimbleTransaction extends React.Component {
               modals: modals,
               account: "",
               accountValidated: null,
-              transactions: []
+              transactions: [],
             },
             () => {
               this.initAccount();
@@ -557,7 +557,7 @@ class RimbleTransaction extends React.Component {
     try {
       contract.methods[contractMethod]()
         .send({ from: account })
-        .on("transactionHash", hash => {
+        .on("transactionHash", (hash) => {
           // Submitted to block and received transaction hash
           // Set properties on the current transaction
           transaction.transactionHash = hash;
@@ -598,7 +598,7 @@ class RimbleTransaction extends React.Component {
             callback("confirmation", transaction);
           }
         })
-        .on("receipt", receipt => {
+        .on("receipt", (receipt) => {
           // Received receipt, met total number of confirmations
           transaction.recentEvent = "receipt";
           this.updateTransaction(transaction);
@@ -606,7 +606,7 @@ class RimbleTransaction extends React.Component {
             callback("receipt", transaction);
           }
         })
-        .on("error", error => {
+        .on("error", (error) => {
           // Errored out
           transaction.status = "error";
           transaction.recentEvent = "error";
@@ -617,7 +617,7 @@ class RimbleTransaction extends React.Component {
             secondaryMessage: "Could not change value.",
             actionHref: "",
             actionText: "",
-            variant: "failure"
+            variant: "failure",
           });
           if (callback) {
             callback("error: " + error, transaction);
@@ -632,7 +632,7 @@ class RimbleTransaction extends React.Component {
         secondaryMessage: "Could not change value on smart contract",
         actionHref: "",
         actionText: "",
-        variant: "failure"
+        variant: "failure",
       });
       if (callback) {
         callback("error: " + error, error);
@@ -651,7 +651,7 @@ class RimbleTransaction extends React.Component {
     return transaction;
   };
 
-  addTransaction = transaction => {
+  addTransaction = (transaction) => {
     const transactions = { ...this.state.transactions };
     console.log("addTransaction: ", { ...transaction });
     transactions[`tx${transaction.created}`] = transaction;
@@ -659,7 +659,7 @@ class RimbleTransaction extends React.Component {
   };
 
   // Add/update transaction in state
-  updateTransaction = updatedTransaction => {
+  updateTransaction = (updatedTransaction) => {
     const transactions = { ...this.state.transactions };
     const transaction = { ...updatedTransaction };
     transaction.lastUpdated = Date.now();
@@ -668,7 +668,7 @@ class RimbleTransaction extends React.Component {
   };
 
   // UTILITY
-  shortenHash = hash => {
+  shortenHash = (hash) => {
     let shortHash = hash;
     const txStart = shortHash.substr(0, 7);
     const txEnd = shortHash.substr(shortHash.length - 4);
@@ -677,7 +677,7 @@ class RimbleTransaction extends React.Component {
   };
 
   // CONNECTION MODAL METHODS
-  closeConnectionModal = e => {
+  closeConnectionModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -699,7 +699,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals: modals, callback: callback });
   };
 
-  closeConnectionPendingModal = e => {
+  closeConnectionPendingModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -709,7 +709,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  openConnectionPendingModal = e => {
+  openConnectionPendingModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -722,7 +722,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  closeUserRejectedConnectionModal = e => {
+  closeUserRejectedConnectionModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -732,7 +732,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  openUserRejectedConnectionModal = e => {
+  openUserRejectedConnectionModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -742,7 +742,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  closeValidationPendingModal = e => {
+  closeValidationPendingModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -754,7 +754,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  openValidationPendingModal = e => {
+  openValidationPendingModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -767,7 +767,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  closeUserRejectedValidationModal = e => {
+  closeUserRejectedValidationModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -779,7 +779,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  openUserRejectedValidationModal = e => {
+  openUserRejectedValidationModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -791,7 +791,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  closeNoWeb3BrowserModal = e => {
+  closeNoWeb3BrowserModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -801,7 +801,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  openNoWeb3BrowserModal = e => {
+  openNoWeb3BrowserModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -811,7 +811,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  closeNoWalletModal = e => {
+  closeNoWalletModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -821,7 +821,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  openNoWalletModal = e => {
+  openNoWalletModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -831,7 +831,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  closeNoWalletModal = e => {
+  closeNoWalletModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -841,7 +841,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  openNoWalletModal = e => {
+  openNoWalletModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -851,7 +851,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  closeWrongNetworkModal = e => {
+  closeWrongNetworkModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -861,7 +861,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  openWrongNetworkModal = e => {
+  openWrongNetworkModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -871,7 +871,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals });
   };
 
-  closeTransactionConnectionModal = e => {
+  closeTransactionConnectionModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -891,7 +891,7 @@ class RimbleTransaction extends React.Component {
     this.setState({ modals, callback: callback });
   };
 
-  closeLowFundsModal = e => {
+  closeLowFundsModal = (e) => {
     if (typeof e !== "undefined") {
       e.preventDefault();
     }
@@ -934,7 +934,7 @@ class RimbleTransaction extends React.Component {
       required: {},
       current: {},
       isCorrectNetwork: null,
-      checkNetwork: this.checkNetwork
+      checkNetwork: this.checkNetwork,
     },
     modals: {
       data: {
@@ -947,7 +947,7 @@ class RimbleTransaction extends React.Component {
         userRejectedValidation: null,
         wrongNetworkModalIsOpen: null,
         transactionConnectionModalIsOpen: null,
-        lowFundsModalIsOpen: null
+        lowFundsModalIsOpen: null,
       },
       methods: {
         openNoWeb3BrowserModal: this.openNoWeb3BrowserModal,
@@ -969,16 +969,16 @@ class RimbleTransaction extends React.Component {
         closeTransactionConnectionModal: this.closeTransactionConnectionModal,
         openTransactionConnectionModal: this.openTransactionConnectionModal,
         closeLowFundsModal: this.closeLowFundsModal,
-        openLowFundsModal: this.openLowFundsModal
-      }
+        openLowFundsModal: this.openLowFundsModal,
+      },
     },
     transaction: {
       data: {
-        transactions: null
+        transactions: null,
       },
       meta: {},
-      methods: {}
-    }
+      methods: {},
+    },
   };
 
   componentDidMount() {
